@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="css/sample.css">
+<title>ポケモン図鑑</title>
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script src="js/jquery-3.5.1.min.js"></script>
+</head>
+<body>
+
+  <header>
+    <h1 id="h1"><div id="head_01">POKEMON</div><div id="head_02">ポケモン図鑑</div></h1>
+    <p>
+      <input type="text" id="keyword" value="">
+      <button id="readData">SEARCH</button>
+      <button id="random">RANDOM</button>
+    </p>
+  </header>
+
+  <main>
+    <!-- 検索結果を表示する -->
+    <div id="result">
+        <div id="left">
+            <img id="frontImg" src="" alt="">
+        </div>
+        <div id="right">
+            <table>
+                <tr>
+                    <td class="td_01">No.</td><td id="pokeNo" class="td_02"></td>
+                </tr>
+                <tr>
+                    <td class="td_01">Name</td><td id="pokeName" class="td_02"></td>
+                </tr>
+                <tr>
+                    <td class="td_01_">Type_01</td><td id="pokeType_01" class="td_02"></td>
+                </tr>
+                <tr>
+                    <td class="td_01_">Type_02</td><td id="pokeType_02" class="td_02"></td>
+                </tr>
+            </table>
+        </div>
+    </div>   
+    <div>
+        <div id="noButton">
+            <button id="no100" class="no">No.001-100</button>
+            <button id="no200" class="no">No.101-200</button>
+            <button id="no300" class="no">No.201-300</button>
+            <button id="no400" class="no">No.301-400</button>
+            <button id="no500" class="no">No.401-500</button>
+            <button id="no600" class="no">No.501-600</button>
+            <button id="no700" class="no">No.601-700</button>
+            <button id="no800" class="no">No.701-800</button>
+            <button id="no900" class="no">No.801-900</button>
+            <button id="no1008" class="no">No.901-1008</button>
+            <button id="all" class="no">ALL_POKE</button>
+        </div>
+        <div id="imgMultiple">
+            <img id="" src="" alt="">
+        </div>
+    </div>  
+  </main>
+
+<script>
+// 手順
+// 1. axios を使って 情報を取得する
+// 2. JSONデータ構造を基に本のタイトルを取得する
+// 3. 本のタイトル情報をHTMLに出力する
+// ---ここからは課題！
+// 4. クリックイベントで括る
+// 5. id="keyword"の入力値を取得 → URLの"?q=jquery"の"queryの文字を取得した入力値（変数）に変える"
+// 6. 出版社も表示してみよう！（データ構造はconsole.logで確認！！）
+
+// axios を使う[開始]
+
+// ポケモンを検索したら発火🔥
+$("#readData").on('click', function() {
+  let keyword = $("#keyword").val();
+  console.log(keyword);
+  const url = "https://pokeapi.co/api/v2/pokemon/" + keyword
+  console.log(url);
+  axios.get(url).then(function (res) {
+    console.log(res.data);
+    // ポケモンの画像を出力する
+    const frontImg = res.data.sprites.front_default
+    console.log(frontImg);
+    $("#frontImg").attr("src",frontImg);
+    console.log(url)
+    // 図鑑No.を出力する
+    let pokeNo = res.data.id;
+    // 図鑑ナンバーを３桁に揃える
+    if (pokeNo < 10) {
+        pokeNo = "00" + pokeNo
+    } else if (9 < pokeNo && pokeNo < 100) {
+        pokeNo = "0" + pokeNo
+    }
+    console.log(pokeNo);
+    $("#pokeNo").text(pokeNo);
+    // ポケモンの名前を出力する
+    const pokeName = res.data.name;
+    console.log(pokeName);
+    $("#pokeName").text(pokeName);
+    // ポケモンのタイプを取得する
+    // const pokeType = res.data.types[0].type.name;
+    let pokeType = res.data.types;
+    // console.log(pokeType.type.name)
+    console.log(pokeType);
+    // console.log(pokeType.length);
+    let typeAdd = [];
+    for (let i = 0; i < pokeType.length ;i++) {
+        pokeTypeCV = pokeType[i].type.name;
+        console.log(pokeTypeCV);
+        typeAdd.push(pokeTypeCV);
+        console.log(typeAdd[i]);
+        // console.log(typeAdd[1]);
+        $("#pokeType_01").text(typeAdd[0]);
+        if(typeAdd[1] == undefined){
+            $("#pokeType_02").text("-");
+        } else if(typeAdd[1] !== ""){
+            $("#pokeType_02").text(typeAdd[1]);
+        }
+    }
+
+  })
+  // メッセージ送信したらtextを空にする。
+  $("#keyword").val("");
+  // メッセージ送信した後はtextをFocusする。
+  $("#keyword").focus();
+})
+
+// Enterキー(which===13)を押すとメッセージ送信できる
+// keyupだとIME確定時のEnterで送信されてしまうため、keydownとする
+$("#keyword").on("keydown",function(event){
+    // && !e.shihtKeyを設定することで Shiftキー＋Enterキー の場合は改行
+    if (event.which === 13 && !event.shiftKey){
+        $("#readData").click()
+    }
+});
+
+// RANDOM押した時の表示
+$("#random").on("click",function(){
+    let random = Math.floor(Math.random()*1008)+1;
+    console.log(random);
+    $("#keyword").val(random);
+    $("#readData").click();
+})
+
+// 以下No.100単位でデータ出力
+let array100 = [];
+let poke100 = [];
+$("#no100").on("click",function(){
+    for (let i = 1 ; i < 101; i++){
+        array100.push(i);
+        let url = "https://pokeapi.co/api/v2/pokemon/" + [i]
+        console.log(url);
+        axios.get(url).then(function (res) {
+            // pokeAPIのデータの詳細を見たい時は以下console.logのコメントアウトを解除する
+            // console.log(res.data);
+            let frontImg = res.data.sprites.front_default
+            frontImg =  `<img id="frontImg_02" src="` + frontImg;
+            frontImg += `" alt="">`
+            // console.log(frontImg);
+            poke100.push(frontImg);
+            // console.log(poke100);
+            $("#imgMultiple").append(frontImg);
+        })
+    }
+    // 以下なぜか反応せず...💀💀💀
+    // console.log(poke100);
+    // for (let j = 0; j < poke100.length; j++) {
+    //     console.log(poke100[j]);
+    //     $("#imgMultiple").append(poke100);
+    // }
+})
+
+let array200 = [];
+let poke200 = [];
+$("#no200").on("click",function(){
+    for (let i = 101 ; i < 201; i++){
+        array200.push(i);
+        let url = "https://pokeapi.co/api/v2/pokemon/" + [i]
+        console.log(url);
+        axios.get(url).then(function (res) {
+            // pokeAPIのデータの詳細を見たい時は以下console.logのコメントアウトを解除する
+            // console.log(res.data);
+            let frontImg = res.data.sprites.front_default
+            frontImg =  `<img id="frontImg_02" src="` + frontImg;
+            frontImg += `" alt="">`
+            // console.log(frontImg);
+            // poke200.push(frontImg);
+            $("#imgMultiple").append(frontImg);
+        }) 
+    }
+})
+
+let array300 = [];
+let poke300 = [];
+$("#no300").on("click",function(){
+    for (let i = 201 ; i < 301; i++){
+        array300.push(i);
+        let url = "https://pokeapi.co/api/v2/pokemon/" + [i]
+        console.log(url);
+        axios.get(url).then(function (res) {
+            // pokeAPIのデータの詳細を見たい時は以下console.logのコメントアウトを解除する
+            // console.log(res.data);
+            let frontImg = res.data.sprites.front_default
+            frontImg =  `<img id="frontImg_02" src="` + frontImg;
+            frontImg += `" alt="">`
+            // console.log(frontImg);
+            // poke300.push(frontImg);
+            $("#imgMultiple").append(frontImg);
+        })
+    }
+})
+
+let array400 = [];
+let poke400 = [];
+$("#no400").on("click",function(){
+    for (let i = 301 ; i < 401; i++){
+        array400.push(i);
+        let url = "https://pokeapi.co/api/v2/pokemon/" + [i]
+        console.log(url);
+        axios.get(url).then(function (res) {
+            // pokeAPIのデータの詳細を見たい時は以下console.logのコメントアウトを解除する
+            // console.log(res.data);
+            let frontImg = res.data.sprites.front_default
+            frontImg =  `<img id="frontImg_02" src="` + frontImg;
+            frontImg += `" alt="">`
+            // console.log(frontImg);
+            // poke400.push(frontImg);
+            $("#imgMultiple").append(frontImg);
+        })
+    }
+})
+
+let array500 = [];
+let poke500 = [];
+$("#no500").on("click",function(){
+    for (let i = 401 ; i < 501; i++){
+        array500.push(i);
+        let url = "https://pokeapi.co/api/v2/pokemon/" + [i]
+        console.log(url);
+        axios.get(url).then(function (res) {
+            // pokeAPIのデータの詳細を見たい時は以下console.logのコメントアウトを解除する
+            // console.log(res.data);
+            let frontImg = res.data.sprites.front_default
+            frontImg =  `<img id="frontImg_02" src="` + frontImg;
+            frontImg += `" alt="">`
+            // console.log(frontImg);
+            poke500.push(frontImg);
+            // console.log(poke100);
+            $("#imgMultiple").append(frontImg);
+        })
+    }
+})
+
+let array600 = [];
+let poke600 = [];
+$("#no600").on("click",function(){
+    for (let i = 501 ; i < 601; i++){
+        array600.push(i);
+        let url = "https://pokeapi.co/api/v2/pokemon/" + [i]
+        console.log(url);
+        axios.get(url).then(function (res) {
+            // pokeAPIのデータの詳細を見たい時は以下console.logのコメントアウトを解除する
+            // console.log(res.data);
+            let frontImg = res.data.sprites.front_default
+            frontImg =  `<img id="frontImg_02" src="` + frontImg;
+            frontImg += `" alt="">`
+            // console.log(frontImg);
+            // poke600.push(frontImg);
+            $("#imgMultiple").append(frontImg);
+        })
+    }
+})
+
+let array700 = [];
+let poke700 = [];
+$("#no700").on("click",function(){
+    for (let i = 601 ; i < 701; i++){
+        array700.push(i);
+        let url = "https://pokeapi.co/api/v2/pokemon/" + [i]
+        console.log(url);
+        axios.get(url).then(function (res) {
+            // pokeAPIのデータの詳細を見たい時は以下console.logのコメントアウトを解除する
+            // console.log(res.data);
+            let frontImg = res.data.sprites.front_default
+            frontImg =  `<img id="frontImg_02" src="` + frontImg;
+            frontImg += `" alt="">`
+            // console.log(frontImg);
+            // poke700.push(frontImg);
+            $("#imgMultiple").append(frontImg);
+        })
+    }
+})
+
+let array800 = [];
+let poke800 = [];
+$("#no800").on("click",function(){
+    for (let i = 701 ; i < 801; i++){
+        array800.push(i);
+        let url = "https://pokeapi.co/api/v2/pokemon/" + [i]
+        console.log(url);
+        axios.get(url).then(function (res) {
+            // pokeAPIのデータの詳細を見たい時は以下console.logのコメントアウトを解除する
+            // console.log(res.data);
+            let frontImg = res.data.sprites.front_default
+            frontImg =  `<img id="frontImg_02" src="` + frontImg;
+            frontImg += `" alt="">`
+            // console.log(frontImg);
+            // poke800.push(frontImg);
+            $("#imgMultiple").append(frontImg);
+        })
+    }
+})
+
+let array900 = [];
+let poke900 = [];
+$("#no900").on("click",function(){
+    for (let i = 801 ; i < 901; i++){
+        array900.push(i);
+        let url = "https://pokeapi.co/api/v2/pokemon/" + [i]
+        console.log(url);
+        axios.get(url).then(function (res) {
+            // pokeAPIのデータの詳細を見たい時は以下console.logのコメントアウトを解除する
+            // console.log(res.data);
+            let frontImg = res.data.sprites.front_default
+            frontImg =  `<img id="frontImg_02" src="` + frontImg;
+            frontImg += `" alt="">`
+            // console.log(frontImg);
+            // poke900.push(frontImg);
+            $("#imgMultiple").append(frontImg);
+        })
+    }
+})
+
+let array1008 = [];
+let poke1008 = [];
+$("#no1008").on("click",function(){
+    for (let i = 901 ; i < 1009; i++){
+        array1008.push(i);
+        let url = "https://pokeapi.co/api/v2/pokemon/" + [i]
+        console.log(url);
+        axios.get(url).then(function (res) {
+            // pokeAPIのデータの詳細を見たい時は以下console.logのコメントアウトを解除する
+            // console.log(res.data);
+            let frontImg = res.data.sprites.front_default
+            frontImg =  `<img id="frontImg_02" src="` + frontImg;
+            frontImg += `" alt="">`
+            // console.log(frontImg);
+            // poke1008.push(frontImg);
+            $("#imgMultiple").append(frontImg);
+        })
+    }
+})
+
+let arrayALL = [];
+let pokeALL = [];
+$("#all").on("click",function(){
+    for (let i = 1 ; i < 1009; i++){
+        arrayALL.push(i);
+        let url = "https://pokeapi.co/api/v2/pokemon/" + [i]
+        console.log(url);
+        axios.get(url).then(function (res) {
+            // pokeAPIのデータの詳細を見たい時は以下console.logのコメントアウトを解除する
+            // console.log(res.data);
+            let frontImg = res.data.sprites.front_default
+            frontImg =  `<img id="frontImg_02" src="` + frontImg;
+            frontImg += `" alt="">`
+            // console.log(frontImg);
+            // pokeALL.push(frontImg);
+            $("#imgMultiple").append(frontImg);
+        })
+    }
+})
+
+// axios を使う[終了]
+
+</script>
+</body>
+</html>
